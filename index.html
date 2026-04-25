@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      try {
+        var _s = JSON.parse(localStorage.getItem('edu-x-settings-v1') || '{}');
+        if (_s.theme === 'dark') document.documentElement.classList.add('dark');
+        if (_s.locale === 'ru') document.documentElement.lang = 'ru';
+        else if (_s.locale === 'en') document.documentElement.lang = 'en';
+        else document.documentElement.lang = 'uz';
+      } catch (e) {}
+    </script>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edu-X · Admin</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
