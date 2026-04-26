@@ -9,19 +9,20 @@ import {
   updateStudent,
 } from '../../store/eduCenterSlice';
 import { COURSE_CATALOG, courseLabelById } from '../../constants/courses';
-import { GlassPanel } from '../../components/GlassPanel';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/Table';
-import { Badge } from '../../components/ui/Badge';
-import { filterStudentsByQuery } from '../../utils/studentSearch';
-import { UserPlus, KeyRound, Copy, Check, Pencil } from 'lucide-react';
+  Search,
+  Plus,
+  MoreVertical,
+  Edit2,
+  Trash2,
+  Copy,
+  Check,
+  UserPlus,
+  KeyRound,
+  Filter
+} from 'lucide-react';
 import { useT } from '../../i18n/useT';
+import { Badge } from '../../components/ui/Badge';
 
 const emptyForm = {
   firstName: '',
@@ -35,20 +36,21 @@ const emptyForm = {
 };
 
 const inputClass =
-  'w-full rounded-xl border border-emerald-200/80 bg-white/80 px-4 py-2.5 font-mono text-sm text-emerald-950 outline-none transition focus:border-lime-500 focus:ring-2 focus:ring-lime-500/20 dark:border-lime-500/20 dark:bg-emerald-950/50 dark:text-lime-100 dark:focus:border-lime-400 dark:focus:ring-lime-400/25';
+  'w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 dark:border-slate-800 dark:bg-slate-900/50 dark:text-white dark:focus:border-violet-500/50';
 
-function XpMiniBar({ xp, goal }) {
+function XpProgressBar({ xp, goal }) {
   const x = Math.max(0, Number(xp) || 0);
   const g = Math.max(1, Number(goal) || 750);
   const pct = Math.min(100, (x / g) * 100);
   return (
-    <div className="min-w-[88px] max-w-[120px]">
-      <div className="mb-0.5 font-mono text-[10px] text-emerald-800/80 dark:text-lime-200/70">
-        {x} / {g}
+    <div className="w-24">
+      <div className="mb-1 flex justify-between text-[10px] font-bold text-slate-400">
+        <span>{x}</span>
+        <span>{g}</span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-emerald-200/50 dark:bg-emerald-900/60">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
         <div
-          className="h-full rounded-full bg-lime-500 transition-all dark:bg-lime-400"
+          className="h-full rounded-full bg-violet-600 transition-all dark:bg-violet-500 shadow-[0_0_8px_rgba(124,58,237,0.4)]"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -62,6 +64,7 @@ export default function Students() {
   const { students, groups } = useSelector((s) => s.eduCenter);
   const search = useSelector((s) => s.ui.adminSearch);
 
+  const [isAdding, setIsAdding] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [createdCreds, setCreatedCreds] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -75,13 +78,10 @@ export default function Students() {
   });
 
   const filtered = useMemo(
-    () => filterStudentsByQuery(students, search),
+    () => students.filter(s => 
+      `${s.firstName} ${s.lastName} ${s.loginId}`.toLowerCase().includes(search.toLowerCase())
+    ),
     [students, search]
-  );
-
-  const sortedGroups = useMemo(
-    () => [...groups].sort((a, b) => a.name.localeCompare(b.name)),
-    [groups]
   );
 
   const editStudent = useMemo(
@@ -120,19 +120,16 @@ export default function Students() {
     );
     setCreatedCreds({ loginId: issued.loginId, password: pw });
     setForm(emptyForm);
+    setIsAdding(false);
   };
 
   const copyCreds = async (loginId, password) => {
-    const text = password
-      ? `${t('students.copyLineId')}: ${loginId}\n${t('students.copyLinePw')}: ${password}`
-      : `${t('students.copyLineId')}: ${loginId}`;
+    const text = `ID: ${loginId}\nPassword: ${password}`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   };
 
   const saveGamify = () => {
@@ -140,407 +137,272 @@ export default function Students() {
     dispatch(
       updateStudent({
         id: editId,
-        kumush: Math.max(0, Math.floor(Number(gf.kumush)) || 0),
-        xp: Math.max(0, Math.floor(Number(gf.xp)) || 0),
-        xpGoal: Math.max(1, Math.floor(Number(gf.xpGoal)) || 750),
-        level: Math.max(1, Math.floor(Number(gf.level)) || 1),
-        rank: Math.max(0, Math.floor(Number(gf.rank)) || 0),
+        ...gf,
+        kumush: Number(gf.kumush),
+        xp: Number(gf.xp),
+        xpGoal: Number(gf.xpGoal),
+        level: Number(gf.level),
+        rank: Number(gf.rank),
       })
     );
     setEditId(null);
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-emerald-950 dark:text-lime-50">
-          {t('students.title')}
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-emerald-900/75 dark:text-lime-100/60">{t('students.subtitle')}</p>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-        <GlassPanel className="p-6 md:p-8">
-          <div className="mb-6 flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-lime-400/20 text-emerald-800 dark:bg-lime-500/15 dark:text-lime-300">
-              <UserPlus size={20} />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-emerald-950 dark:text-lime-50">{t('students.newTitle')}</h2>
-              <p className="text-xs text-emerald-800/65 dark:text-lime-200/55">{t('students.newHint')}</p>
-            </div>
-          </div>
-
-          <form onSubmit={handleAdd} className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2 grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                  {t('students.firstName')}
-                </label>
-                <input
-                  required
-                  value={form.firstName}
-                  onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                  {t('students.lastName')}
-                </label>
-                <input
-                  required
-                  value={form.lastName}
-                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-            <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                {t('students.fatherName')}
-              </label>
-              <input
-                value={form.fatherName}
-                onChange={(e) => setForm({ ...form, fatherName: e.target.value })}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                {t('students.phone')}
-              </label>
-              <input
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className={inputClass}
-                placeholder="+998 …"
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                {t('students.parentPhone')}
-              </label>
-              <input
-                value={form.parentPhone}
-                onChange={(e) => setForm({ ...form, parentPhone: e.target.value })}
-                className={inputClass}
-                placeholder="+998 …"
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                {t('students.password')}
-              </label>
-              <input
-                required
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className={inputClass}
-                autoComplete="new-password"
-              />
-              <p className="mt-1 text-[11px] text-emerald-800/55 dark:text-lime-200/45">{t('students.passwordHint')}</p>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                {t('students.course')}
-              </label>
-              <select
-                value={form.selectedCourse}
-                onChange={(e) => setForm({ ...form, selectedCourse: e.target.value })}
-                className={inputClass}
-              >
-                {COURSE_CATALOG.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {courseLabel(c.id)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                {t('students.prevEdu')}
-              </label>
-              <textarea
-                rows={2}
-                value={form.previousEducation}
-                onChange={(e) => setForm({ ...form, previousEducation: e.target.value })}
-                className={`${inputClass} resize-none`}
-                placeholder={t('students.prevEduPh')}
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <button
-                type="submit"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 py-3 font-mono text-sm font-semibold text-lime-100 shadow-lg shadow-emerald-900/25 transition hover:-translate-y-px hover:bg-emerald-800 sm:w-auto sm:px-8 dark:bg-lime-500 dark:text-emerald-950 dark:shadow-lime-500/20 dark:hover:bg-lime-400"
-              >
-                <UserPlus size={18} />
-                {t('students.submit')}
-              </button>
-            </div>
-          </form>
-        </GlassPanel>
-
-        <GlassPanel className="p-6 md:p-8">
-          <div className="mb-4 flex items-center gap-2 text-emerald-950 dark:text-lime-50">
-            <KeyRound size={20} className="text-emerald-700 dark:text-lime-400" />
-            <h2 className="text-lg font-semibold">{t('students.credsTitle')}</h2>
-          </div>
-          {!createdCreds && (
-            <p className="text-sm text-emerald-800/65 dark:text-lime-200/55">{t('students.credsEmpty')}</p>
-          )}
-          {createdCreds && (
-            <div className="space-y-3 rounded-xl border border-lime-400/40 bg-emerald-50/70 p-4 dark:border-lime-500/25 dark:bg-emerald-950/50">
-              <p className="text-xs font-medium text-emerald-900 dark:text-lime-300">{t('students.loginId')}</p>
-              <p className="font-mono text-lg font-semibold text-emerald-950 dark:text-lime-50">
-                {createdCreds.loginId}
-              </p>
-              {createdCreds.password && (
-                <>
-                  <p className="text-xs font-medium text-emerald-900 dark:text-lime-300">{t('students.tempPassword')}</p>
-                  <p className="font-mono text-lg font-semibold text-emerald-950 dark:text-lime-50">
-                    {createdCreds.password}
-                  </p>
-                </>
-              )}
-              {createdCreds.password && (
-                <button
-                  type="button"
-                  onClick={() => copyCreds(createdCreds.loginId, createdCreds.password)}
-                  className="inline-flex items-center gap-2 rounded-lg border border-lime-400/50 bg-white px-3 py-2 font-mono text-xs font-semibold text-emerald-900 transition hover:bg-emerald-50 dark:border-lime-500/30 dark:bg-emerald-900/60 dark:text-lime-200 dark:hover:bg-emerald-800/60"
-                >
-                  {copied ? <Check size={14} /> : <Copy size={14} />}
-                  {copied ? t('students.copied') : t('students.copy')}
-                </button>
-              )}
-            </div>
-          )}
-        </GlassPanel>
-      </div>
-
-      <GlassPanel className="overflow-hidden p-0">
-        <div className="border-b border-emerald-200/50 px-6 py-4 dark:border-lime-500/15">
-          <h2 className="text-lg font-semibold text-emerald-950 dark:text-lime-50">{t('students.listTitle')}</h2>
-          <p className="text-xs text-emerald-800/60 dark:text-lime-200/50">
-            {t('students.listCount', { shown: filtered.length, total: students.length })}
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {t('students.title')}
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Manage your student directory, monitor progress, and handle enrollments.
           </p>
         </div>
+        
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsAdding(true)}
+            className="flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-700"
+          >
+            <Plus size={18} />
+            {t('students.newTitle')}
+          </button>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-4">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#0B0F19]">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Total Students</p>
+          <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{students.length}</p>
+        </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#0B0F19]">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Active Now</p>
+          <p className="mt-2 text-3xl font-bold text-emerald-500">{students.filter(s => s.status === 'active').length}</p>
+        </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#0B0F19]">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Graduated</p>
+          <p className="mt-2 text-3xl font-bold text-blue-500">{students.filter(s => s.status === 'finished').length}</p>
+        </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#0B0F19]">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">New This Month</p>
+          <p className="mt-2 text-3xl font-bold text-violet-500">+12</p>
+        </div>
+      </div>
+
+      <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#0B0F19]">
+        <div className="flex flex-col gap-4 border-b border-slate-100 p-6 dark:border-slate-800/50 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+             <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input 
+                  type="text" 
+                  placeholder="Search students..." 
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none focus:border-violet-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-white sm:w-64" 
+                />
+             </div>
+             <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+               <Filter size={18} />
+             </button>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-emerald-200/50 hover:bg-transparent dark:border-lime-500/15">
-                <TableHead>{t('students.colId')}</TableHead>
-                <TableHead>{t('students.colName')}</TableHead>
-                <TableHead>{t('students.colCourse')}</TableHead>
-                <TableHead>{t('students.colGroup')}</TableHead>
-                <TableHead>{t('students.colKumush')}</TableHead>
-                <TableHead>{t('students.colXp')}</TableHead>
-                <TableHead>{t('students.colLevel')}</TableHead>
-                <TableHead>{t('students.colRank')}</TableHead>
-                <TableHead>{t('students.colStatus')}</TableHead>
-                <TableHead className="min-w-[220px]">{t('students.colActions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={10}
-                    className="py-12 text-center text-sm text-emerald-800/60 dark:text-lime-200/50"
-                  >
-                    {t('students.emptyTable')}
-                  </TableCell>
-                </TableRow>
-              )}
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:bg-slate-900/50">
+                <th className="p-5">Student</th>
+                <th className="p-5">Contact</th>
+                <th className="p-5">Course / Group</th>
+                <th className="p-5">Progress</th>
+                <th className="p-5">Status</th>
+                <th className="p-5"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
               {filtered.map((s) => {
                 const g = s.groupId ? groups.find((x) => x.id === s.groupId) : null;
-                const ku = s.kumush ?? 0;
-                const xp = s.xp ?? 0;
-                const goal = s.xpGoal ?? 750;
-                const lv = s.level ?? 1;
-                const rk = s.rank ?? 0;
                 return (
-                  <TableRow key={s.id} className="border-emerald-200/50 dark:border-lime-500/15">
-                    <TableCell className="font-mono text-xs font-medium text-emerald-900 dark:text-lime-200">
-                      {s.loginId}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium text-emerald-950 dark:text-lime-50">
-                        {s.firstName} {s.lastName}
+                  <tr key={s.id} className="transition hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
+                    <td className="p-5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-sm font-bold text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
+                          {s.firstName[0]}{s.lastName[0]}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">{s.firstName} {s.lastName}</p>
+                          <p className="text-xs font-medium text-slate-400">ID: {s.loginId}</p>
+                        </div>
                       </div>
-                      <div className="text-xs text-emerald-800/65 dark:text-lime-200/55">{s.phone}</div>
-                    </TableCell>
-                    <TableCell className="text-xs text-emerald-900/80 dark:text-lime-100/70">
-                      {courseLabel(s.selectedCourse)}
-                    </TableCell>
-                    <TableCell>
-                      {s.status === 'finished' ? (
-                        <span className="text-xs text-emerald-700/40 dark:text-lime-500/35">{t('students.dash')}</span>
-                      ) : g ? (
-                        <Badge variant="blue">{g.name}</Badge>
-                      ) : (
-                        <Badge variant="yellow">{t('students.unassigned')}</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-mono text-sm font-semibold text-lime-700 dark:text-lime-300">
-                      {ku}
-                    </TableCell>
-                    <TableCell>
-                      <XpMiniBar xp={xp} goal={goal} />
-                    </TableCell>
-                    <TableCell className="font-mono text-sm text-emerald-950 dark:text-lime-50">{lv}</TableCell>
-                    <TableCell className="text-xs text-amber-800/90 dark:text-amber-200/90">
-                      {t('students.rankFmt', { rank: rk })}
-                    </TableCell>
-                    <TableCell>
-                      {s.status === 'finished' ? (
-                        <Badge variant="green">{t('students.finished')}</Badge>
-                      ) : (
-                        <Badge variant="primary">{t('students.active')}</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setEditId(s.id)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-lime-400/50 bg-emerald-50/80 px-2 py-1.5 font-mono text-xs font-medium text-emerald-900 transition hover:bg-emerald-100 dark:border-lime-500/25 dark:bg-emerald-950/60 dark:text-lime-200 dark:hover:bg-emerald-900/70"
-                        >
-                          <Pencil size={12} />
-                          {t('students.editGame')}
-                        </button>
-                        {s.status === 'active' && (
-                          <select
-                            value={s.groupId ?? ''}
-                            onChange={(e) => {
-                              const gid = e.target.value;
-                              if (!gid) return;
-                              dispatch(assignStudentToGroup({ studentId: s.id, groupId: gid }));
-                            }}
-                            className="max-w-[140px] rounded-lg border border-emerald-200/80 bg-white/90 px-2 py-1.5 font-mono text-xs text-emerald-950 outline-none focus:ring-2 focus:ring-lime-500/25 dark:border-lime-500/20 dark:bg-emerald-950/70 dark:text-lime-100"
-                          >
-                            <option value="">{t('students.selectGroup')}</option>
-                            {sortedGroups.map((gr) => (
-                              <option key={gr.id} value={gr.id}>
-                                {gr.name}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                        {s.status === 'active' ? (
-                          <button
-                            type="button"
-                            onClick={() => dispatch(markStudentFinished(s.id))}
-                            className="rounded-lg border border-emerald-200/80 bg-white px-2 py-1.5 text-xs font-medium text-emerald-900 transition hover:bg-emerald-50 dark:border-lime-500/20 dark:bg-emerald-950/60 dark:text-lime-100 dark:hover:bg-emerald-900/70"
-                          >
-                            {t('students.finish')}
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => dispatch(reactivateStudent(s.id))}
-                            className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs font-medium text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-700/50 dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:bg-emerald-900/40"
-                          >
-                            {t('students.reactivate')}
-                          </button>
-                        )}
+                    </td>
+                    <td className="p-5">
+                      <p className="text-sm text-slate-600 dark:text-slate-400">{s.phone}</p>
+                      <p className="text-[10px] text-slate-400">Parent: {s.parentPhone}</p>
+                    </td>
+                    <td className="p-5">
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{courseLabel(s.selectedCourse)}</p>
+                      <div className="mt-1">
+                        {g ? <span className="text-xs font-bold text-violet-500">{g.name}</span> : <span className="text-xs text-slate-400">No Group</span>}
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                    <td className="p-5">
+                      <XpProgressBar xp={s.xp} goal={s.xpGoal} />
+                    </td>
+                    <td className="p-5">
+                      <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
+                        s.status === 'active' 
+                          ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' 
+                          : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                      }`}>
+                        {s.status}
+                      </span>
+                    </td>
+                    <td className="p-5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                         <button 
+                           onClick={() => setEditId(s.id)}
+                           className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-violet-600 dark:hover:bg-slate-800 dark:hover:text-violet-400"
+                         >
+                           <Edit2 size={16} />
+                         </button>
+                         <button className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-rose-600 dark:hover:bg-slate-800 dark:hover:text-rose-400">
+                           <Trash2 size={16} />
+                         </button>
+                      </div>
+                    </td>
+                  </tr>
                 );
               })}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
-      </GlassPanel>
+      </div>
 
+      {/* Add Student Modal */}
+      {isAdding && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm dark:bg-black/60">
+          <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-[#0B0F19]">
+             <div className="flex items-center justify-between border-b border-slate-100 p-6 dark:border-slate-800/50">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('students.newTitle')}</h3>
+                <button onClick={() => setIsAdding(false)} className="text-slate-400 hover:text-slate-600">
+                  <Check size={20} />
+                </button>
+             </div>
+             
+             <form onSubmit={handleAdd} className="p-6">
+                <div className="grid gap-6 sm:grid-cols-2">
+                   <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('students.firstName')}</label>
+                      <input required value={form.firstName} onChange={e => setForm({...form, firstName: e.target.value})} className={inputClass} />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('students.lastName')}</label>
+                      <input required value={form.lastName} onChange={e => setForm({...form, lastName: e.target.value})} className={inputClass} />
+                   </div>
+                   <div className="space-y-2 sm:col-span-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('students.fatherName')}</label>
+                      <input value={form.fatherName} onChange={e => setForm({...form, fatherName: e.target.value})} className={inputClass} />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('students.phone')}</label>
+                      <input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className={inputClass} placeholder="+998" />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('students.parentPhone')}</label>
+                      <input value={form.parentPhone} onChange={e => setForm({...form, parentPhone: e.target.value})} className={inputClass} placeholder="+998" />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('students.password')}</label>
+                      <input required type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className={inputClass} />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('students.course')}</label>
+                      <select value={form.selectedCourse} onChange={e => setForm({...form, selectedCourse: e.target.value})} className={inputClass}>
+                        {COURSE_CATALOG.map(c => <option key={c.id} value={c.id}>{courseLabel(c.id)}</option>)}
+                      </select>
+                   </div>
+                </div>
+                
+                <div className="mt-8 flex gap-3">
+                   <button type="submit" className="flex-1 rounded-xl bg-violet-600 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-700">
+                     Create Student
+                   </button>
+                   <button type="button" onClick={() => setIsAdding(false)} className="flex-1 rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400">
+                     Cancel
+                   </button>
+                </div>
+             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Credentials Modal */}
+      {createdCreds && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+           <div className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-2xl dark:border-slate-800 dark:bg-[#0B0F19]">
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                <Check size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Student Created!</h3>
+              <p className="mt-2 text-sm text-slate-500">Here are the login credentials for the new student.</p>
+              
+              <div className="mt-6 space-y-4 rounded-2xl bg-slate-50 p-6 text-left dark:bg-slate-900">
+                 <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Login ID</label>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white">{createdCreds.loginId}</p>
+                 </div>
+                 <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Password</label>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white">{createdCreds.password}</p>
+                 </div>
+              </div>
+              
+              <div className="mt-8 space-y-3">
+                 <button 
+                   onClick={() => copyCreds(createdCreds.loginId, createdCreds.password)}
+                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+                 >
+                   {copied ? <Check size={18} /> : <Copy size={18} />}
+                   {copied ? 'Copied!' : 'Copy Credentials'}
+                 </button>
+                 <button 
+                   onClick={() => setCreatedCreds(null)}
+                   className="w-full rounded-xl bg-violet-600 py-3 text-sm font-bold text-white transition hover:bg-violet-700"
+                 >
+                   Done
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Gamify Modal */}
       {editId && editStudent && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-emerald-950/50 p-4 backdrop-blur-sm dark:bg-black/60">
-          <GlassPanel className="relative max-h-[90vh] w-full max-w-md overflow-y-auto p-6">
-            <h3 className="text-lg font-semibold text-emerald-950 dark:text-lime-50">{t('students.editTitle')}</h3>
-            <p className="mt-1 font-mono text-sm text-emerald-800/80 dark:text-lime-200/70">
-              {editStudent.firstName} {editStudent.lastName} · {editStudent.loginId}
-            </p>
-            <div className="mt-4 grid gap-3">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                  {t('students.colKumush')}
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  value={gf.kumush}
-                  onChange={(e) => setGf({ ...gf, kumush: e.target.value })}
-                  className={inputClass}
-                />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm dark:bg-black/60">
+           <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-[#0B0F19]">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Edit Student Progress</h3>
+              <p className="mt-1 text-sm text-slate-500">{editStudent.firstName} {editStudent.lastName}</p>
+              
+              <div className="mt-6 grid gap-4">
+                 <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-400">Silver (Kumush)</label>
+                    <input type="number" value={gf.kumush} onChange={e => setGf({...gf, kumush: e.target.value})} className={inputClass} />
+                 </div>
+                 <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-400">XP Points</label>
+                    <input type="number" value={gf.xp} onChange={e => setGf({...gf, xp: e.target.value})} className={inputClass} />
+                 </div>
+                 <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-400">Level</label>
+                    <input type="number" value={gf.level} onChange={e => setGf({...gf, level: e.target.value})} className={inputClass} />
+                 </div>
               </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                  {t('students.colXp')}
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  value={gf.xp}
-                  onChange={(e) => setGf({ ...gf, xp: e.target.value })}
-                  className={inputClass}
-                />
+              
+              <div className="mt-8 flex gap-3">
+                 <button onClick={saveGamify} className="flex-1 rounded-xl bg-violet-600 py-3 text-sm font-bold text-white transition hover:bg-violet-700">Save Progress</button>
+                 <button onClick={() => setEditId(null)} className="flex-1 rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">Cancel</button>
               </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                  {t('students.xpGoalLabel')}
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={gf.xpGoal}
-                  onChange={(e) => setGf({ ...gf, xpGoal: e.target.value })}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                  {t('students.colLevel')}
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={gf.level}
-                  onChange={(e) => setGf({ ...gf, level: e.target.value })}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                  {t('students.colRank')}
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  value={gf.rank}
-                  onChange={(e) => setGf({ ...gf, rank: e.target.value })}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={saveGamify}
-                className="rounded-xl bg-emerald-900 px-5 py-2.5 font-mono text-sm font-semibold text-lime-100 dark:bg-lime-500 dark:text-emerald-950"
-              >
-                {t('students.save')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditId(null)}
-                className="rounded-xl border border-emerald-200/80 px-5 py-2.5 text-sm text-emerald-900 dark:border-lime-500/25 dark:text-lime-200"
-              >
-                {t('students.cancel')}
-              </button>
-            </div>
-          </GlassPanel>
+           </div>
         </div>
       )}
     </div>

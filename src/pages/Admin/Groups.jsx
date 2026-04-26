@@ -2,27 +2,32 @@ import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addGroup, deleteGroup, assignStudentToGroup, assignTeacherToGroup } from '../../store/eduCenterSlice';
 import { COURSE_CATALOG, formatGroupName } from '../../constants/courses';
-import { GlassPanel } from '../../components/GlassPanel';
 import { Badge } from '../../components/ui/Badge';
-import { Layers, Plus, Trash2, Users } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/Table';
+import { 
+  Layers, 
+  Plus, 
+  Trash2, 
+  Users, 
+  ChevronDown, 
+  ChevronUp, 
+  UserPlus, 
+  GraduationCap, 
+  Search,
+  MoreVertical,
+  MoreHorizontal,
+  Clock
+} from 'lucide-react';
 import { useT } from '../../i18n/useT';
 
 const inputClass =
-  'w-full rounded-xl border border-emerald-200/80 bg-white/80 px-4 py-2.5 font-mono text-sm text-emerald-950 outline-none focus:ring-2 focus:ring-lime-500/25 dark:border-lime-500/20 dark:bg-emerald-950/50 dark:text-lime-100';
+  'w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 dark:border-slate-800 dark:bg-slate-900/50 dark:text-white dark:focus:border-violet-500/50';
 
 export default function Groups() {
   const t = useT();
   const dispatch = useDispatch();
   const { groups, students, teachers } = useSelector((s) => s.eduCenter);
 
+  const [isAdding, setIsAdding] = useState(false);
   const [courseId, setCourseId] = useState(COURSE_CATALOG[0].id);
   const [level, setLevel] = useState(1);
   const [expandedId, setExpandedId] = useState(null);
@@ -40,6 +45,7 @@ export default function Groups() {
   const handleCreate = (e) => {
     e.preventDefault();
     dispatch(addGroup({ courseId, level: Number(level) || 1 }));
+    setIsAdding(false);
   };
 
   const activeStudents = useMemo(
@@ -48,203 +54,163 @@ export default function Groups() {
   );
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-emerald-950 dark:text-lime-50">
-          {t('groups.title')}
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-emerald-900/75 dark:text-lime-100/60">{t('groups.subtitle')}</p>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {t('groups.title')}
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Create and manage learning groups, assign teachers, and track student enrollment.
+          </p>
+        </div>
+        
+        <button 
+          onClick={() => setIsAdding(true)}
+          className="flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-700"
+        >
+          <Plus size={18} />
+          {t('groups.newTitle')}
+        </button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
-        <GlassPanel className="p-6 md:p-8">
-          <div className="mb-6 flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-lime-400/20 text-emerald-800 dark:bg-lime-500/15 dark:text-lime-300">
-              <Plus size={20} />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-emerald-950 dark:text-lime-50">{t('groups.newTitle')}</h2>
-              <p className="font-mono text-xs text-emerald-800/65 dark:text-lime-200/55">
-                {formatGroupName(courseId, Number(level) || 1)}
-              </p>
-            </div>
-          </div>
-          <form onSubmit={handleCreate} className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                {t('groups.course')}
-              </label>
-              <select
-                value={courseId}
-                onChange={(e) => setCourseId(e.target.value)}
-                className={inputClass}
-              >
-                {COURSE_CATALOG.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {courseLabel(c.id)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-emerald-900/85 dark:text-lime-200/80">
-                {t('groups.level')}
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={99}
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-                className={inputClass}
-              />
-              <p className="mt-1 text-[11px] text-emerald-800/60 dark:text-lime-200/50">{t('groups.levelHint')}</p>
-            </div>
-            <button
-              type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 py-3 font-mono text-sm font-semibold text-lime-100 shadow-lg transition hover:-translate-y-px hover:bg-emerald-800 dark:bg-lime-500 dark:text-emerald-950 dark:hover:bg-lime-400"
-            >
-              <Layers size={18} />
-              {t('groups.create')}
-            </button>
-          </form>
-        </GlassPanel>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {sortedGroups.map((g) => {
+          const members = g.studentIds.map((id) => students.find((s) => s.id === id)).filter(Boolean);
+          const teacher = teachers.find(t => t.id === g.teacherId);
+          const isOpen = expandedId === g.id;
 
-        <div className="space-y-4">
-          {sortedGroups.length === 0 && (
-            <GlassPanel className="p-10 text-center text-sm text-emerald-800/60 dark:text-lime-200/50">
-              {t('groups.empty')}
-            </GlassPanel>
-          )}
-          {sortedGroups.map((g) => {
-            const members = g.studentIds
-              .map((id) => students.find((s) => s.id === id))
-              .filter(Boolean);
-            const open = expandedId === g.id;
-            return (
-              <GlassPanel key={g.id} className="overflow-hidden p-0 transition hover:shadow-lg">
-                <button
-                  type="button"
-                  onClick={() => setExpandedId(open ? null : g.id)}
-                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50/90 text-emerald-800 shadow-sm ring-1 ring-lime-400/30 dark:bg-emerald-950/70 dark:text-lime-300 dark:ring-lime-500/20">
-                      <Users size={20} />
+          return (
+            <div key={g.id} className="flex flex-col rounded-3xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl dark:border-slate-800 dark:bg-[#0B0F19]">
+              <div className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
+                      <Users size={24} />
                     </div>
                     <div>
-                      <p className="font-semibold text-emerald-950 dark:text-lime-50">{g.name}</p>
-                      <p className="text-xs text-emerald-800/65 dark:text-lime-200/55">
-                        {t('groups.studentsCount', { n: members.length })}
-                      </p>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">{g.name}</h3>
+                      <p className="text-xs font-medium text-slate-400">{courseLabel(g.courseId)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="blue">{members.length}</Badge>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (window.confirm(t('groups.confirmDelete'))) {
-                          dispatch(deleteGroup(g.id));
-                          if (expandedId === g.id) setExpandedId(null);
-                        }
-                      }}
-                      className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                      title={t('groups.deleteTitle')}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </button>
+                  <button className="text-slate-400 hover:text-slate-600">
+                    <MoreHorizontal size={20} />
+                  </button>
+                </div>
 
-                {open && (
-                  <div className="border-t border-emerald-200/50 px-6 py-4 dark:border-lime-500/15">
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-medium text-emerald-900/75 dark:text-lime-200/70">
-                        {t('groups.addTeacher')}
-                      </span>
-                      <select
-                        className="max-w-xs rounded-lg border border-emerald-200/80 bg-white/90 px-3 py-2 font-mono text-xs text-emerald-950 outline-none focus:ring-2 focus:ring-lime-500/25 dark:border-lime-500/20 dark:bg-emerald-950/80 dark:text-lime-100"
-                        value={g.teacherId || ''}
-                        onChange={(e) => {
-                          const teacherId = e.target.value || null;
-                          dispatch(assignTeacherToGroup({ groupId: g.id, teacherId }));
-                        }}
-                      >
-                        <option value="">{t('groups.selectTeacher')}</option>
-                        {teachers.map((teacher) => (
-                          <option key={teacher.id} value={teacher.id}>
-                            {teacher.firstName} {teacher.lastName} · {teacher.loginId}
-                          </option>
-                        ))}
-                      </select>
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                      <GraduationCap size={14} className="text-violet-500" />
+                      Teacher
                     </div>
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-medium text-emerald-900/75 dark:text-lime-200/70">
-                        {t('groups.addToGroup')}
-                      </span>
-                      <select
-                        className="max-w-xs rounded-lg border border-emerald-200/80 bg-white/90 px-3 py-2 font-mono text-xs text-emerald-950 outline-none focus:ring-2 focus:ring-lime-500/25 dark:border-lime-500/20 dark:bg-emerald-950/80 dark:text-lime-100"
-                        defaultValue=""
-                        onChange={(e) => {
-                          const sid = e.target.value;
-                          if (!sid) return;
-                          dispatch(assignStudentToGroup({ studentId: sid, groupId: g.id }));
-                          e.target.value = '';
-                        }}
-                      >
-                        <option value="">{t('groups.pickStudent')}</option>
-                        {activeStudents
-                          .filter((s) => s.groupId !== g.id)
-                          .map((s) => (
-                            <option key={s.id} value={s.id}>
-                              {s.firstName} {s.lastName} · {s.loginId}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-                    {members.length === 0 ? (
-                      <p className="text-sm text-emerald-800/60 dark:text-lime-200/50">{t('groups.groupEmpty')}</p>
+                    {teacher ? (
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">{teacher.firstName} {teacher.lastName}</span>
                     ) : (
-                      <div className="overflow-x-auto rounded-xl border border-emerald-200/50 dark:border-lime-500/15">
-                        <Table>
-                          <TableHeader>
-                            <TableRow className="border-emerald-200/50 hover:bg-transparent dark:border-lime-500/15">
-                              <TableHead>{t('groups.colId')}</TableHead>
-                              <TableHead>{t('groups.colName')}</TableHead>
-                              <TableHead>{t('groups.colPhone')}</TableHead>
-                              <TableHead>{t('groups.colStatus')}</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {members.map((s) => (
-                              <TableRow key={s.id} className="border-emerald-200/50 dark:border-lime-500/15">
-                                <TableCell className="font-mono text-xs text-emerald-900 dark:text-lime-200">
-                                  {s.loginId}
-                                </TableCell>
-                                <TableCell className="font-medium text-emerald-950 dark:text-lime-50">
-                                  {s.firstName} {s.lastName}
-                                </TableCell>
-                                <TableCell className="text-xs text-emerald-800/70 dark:text-lime-200/55">
-                                  {s.phone || t('students.dash')}
-                                </TableCell>
-                                <TableCell>
-                                  <Badge variant="primary">{t('students.active')}</Badge>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
+                      <button className="text-xs font-bold text-violet-500 hover:underline">Assign Teacher</button>
                     )}
                   </div>
-                )}
-              </GlassPanel>
-            );
-          })}
-        </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                      <Users size={14} className="text-blue-500" />
+                      Students
+                    </div>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">{members.length} / 15</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                      <Clock size={14} className="text-emerald-500" />
+                      Schedule
+                    </div>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">Mon, Wed, Fri</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex items-center -space-x-2">
+                   {members.slice(0, 5).map(m => (
+                     <div key={m.id} className="h-8 w-8 rounded-full border-2 border-white bg-slate-200 dark:border-[#0B0F19]" />
+                   ))}
+                   {members.length > 5 && (
+                     <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-bold text-slate-500 dark:border-[#0B0F19] dark:bg-slate-800">
+                       +{members.length - 5}
+                     </div>
+                   )}
+                </div>
+              </div>
+
+              <div className="mt-auto border-t border-slate-100 dark:border-slate-800/50">
+                 <button 
+                   onClick={() => setExpandedId(isOpen ? null : g.id)}
+                   className="flex w-full items-center justify-center gap-2 py-4 text-xs font-bold text-slate-400 hover:text-slate-600 transition"
+                 >
+                   {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                   {isOpen ? 'Close Members' : 'View Members'}
+                 </button>
+              </div>
+
+              {isOpen && (
+                <div className="border-t border-slate-100 bg-slate-50/50 p-6 dark:border-slate-800/50 dark:bg-slate-900/30">
+                   <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">Roster</h4>
+                      <button className="text-[10px] font-bold text-violet-500 hover:underline uppercase tracking-widest">+ Add Student</button>
+                   </div>
+                   <div className="space-y-3">
+                      {members.map(m => (
+                        <div key={m.id} className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+                           <div className="flex items-center gap-3">
+                              <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                                {m.firstName[0]}{m.lastName[0]}
+                              </div>
+                              <span className="text-xs font-bold text-slate-900 dark:text-white">{m.firstName} {m.lastName}</span>
+                           </div>
+                           <button className="text-slate-400 hover:text-rose-500">
+                             <Trash2 size={14} />
+                           </button>
+                        </div>
+                      ))}
+                      {members.length === 0 && <p className="text-center text-xs text-slate-400 py-2">No students yet.</p>}
+                   </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
+
+      {/* Add Group Modal */}
+      {isAdding && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm dark:bg-black/60">
+           <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl dark:border-slate-800 dark:bg-[#0B0F19]">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('groups.newTitle')}</h3>
+              <p className="mt-2 text-sm text-slate-500">Create a new student group for a specific course.</p>
+              
+              <form onSubmit={handleCreate} className="mt-8 space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('groups.course')}</label>
+                  <select value={courseId} onChange={e => setCourseId(e.target.value)} className={inputClass}>
+                    {COURSE_CATALOG.map(c => <option key={c.id} value={c.id}>{courseLabel(c.id)}</option>)}
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('groups.level')}</label>
+                  <input type="number" min={1} value={level} onChange={e => setLevel(e.target.value)} className={inputClass} />
+                </div>
+                
+                <div className="pt-4 flex gap-3">
+                   <button type="submit" className="flex-1 rounded-xl bg-violet-600 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-700">
+                     Create Group
+                   </button>
+                   <button type="button" onClick={() => setIsAdding(false)} className="flex-1 rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                     Cancel
+                   </button>
+                </div>
+              </form>
+           </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,178 +7,178 @@ import {
   TrendingUp,
   TrendingDown,
   Wallet,
-  Sparkles,
+  Calendar,
+  Clock,
+  ArrowUpRight,
+  ArrowDownRight,
+  MoreHorizontal
 } from 'lucide-react';
-import { GlassPanel } from '../../components/GlassPanel';
-import { filterStudentsByQuery } from '../../utils/studentSearch';
 import { formatUZS } from '../../utils/format';
-import { Badge } from '../../components/ui/Badge';
-import { Link } from 'react-router-dom';
 import { useT } from '../../i18n/useT';
 
-function StatCard({ title, value, subtitle, icon: Icon, accent }) {
+function StatCard({ title, value, delta, icon: Icon, color }) {
+  const isPositive = delta.startsWith('+');
   return (
-    <GlassPanel className="group relative overflow-hidden p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_0_48px_rgba(34,197,94,0.18)]">
-      <div
-        className={`pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-20 blur-2xl transition group-hover:opacity-30 ${accent}`}
-      />
-      <div className="relative flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-800/70 dark:text-lime-400/70">
-            {title}
-          </p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-emerald-950 dark:text-lime-50">
-            {value}
-          </p>
-          {subtitle && (
-            <p className="mt-1 text-sm text-emerald-800/65 dark:text-lime-200/55">{subtitle}</p>
-          )}
+    <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-xl dark:border-slate-800 dark:bg-[#0B0F19]">
+      <div className="flex items-center justify-between">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${color} bg-opacity-10 text-opacity-100 shadow-sm ring-1 ring-inset ring-current`}>
+          <Icon size={24} strokeWidth={2.25} />
         </div>
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50/90 text-emerald-800 shadow-sm ring-1 ring-lime-400/30 transition group-hover:scale-105 dark:bg-emerald-950/70 dark:text-lime-300 dark:ring-lime-500/25">
-          <Icon size={22} strokeWidth={1.75} />
+        <div className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold ${isPositive ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'}`}>
+          {isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+          {delta}
         </div>
       </div>
-    </GlassPanel>
+      <div className="mt-5">
+        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">{title}</p>
+        <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{value}</p>
+      </div>
+    </div>
   );
 }
 
 export default function Overview() {
   const t = useT();
   const { students, groups, transactions } = useSelector((s) => s.eduCenter);
-  const search = useSelector((s) => s.ui.adminSearch);
 
-  const stats = useMemo(() => {
+  const statsData = useMemo(() => {
     const active = students.filter((x) => x.status === 'active').length;
-    const finished = students.filter((x) => x.status === 'finished').length;
     const income = transactions
       .filter((tx) => tx.type === 'income')
-      .reduce((a, tx) => a + tx.amount, 0);
-    const expense = transactions
-      .filter((tx) => tx.type === 'expense')
       .reduce((a, tx) => a + tx.amount, 0);
     return {
       total: students.length,
       active,
-      finished,
+      groups: groups.length,
       income,
-      expense,
-      balance: income - expense,
     };
-  }, [students, transactions]);
-
-  const searchHits = useMemo(() => {
-    const list = filterStudentsByQuery(students, search).slice(0, 6);
-    return list.map((s) => {
-      const g = s.groupId ? groups.find((x) => x.id === s.groupId) : null;
-      return { student: s, group: g };
-    });
-  }, [students, groups, search]);
+  }, [students, groups, transactions]);
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-lime-400/35 bg-emerald-50/60 px-3 py-1 font-mono text-xs font-medium text-emerald-900 backdrop-blur-md dark:border-lime-500/25 dark:bg-emerald-950/50 dark:text-lime-200">
-            <Sparkles size={14} className="text-lime-500 dark:text-lime-400" />
-            {t('overview.badge')}
-          </div>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-emerald-950 dark:text-lime-50 md:text-4xl">
-            {t('overview.title')}
-          </h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-emerald-900/75 dark:text-lime-100/60">
-            {t('overview.subtitle')}
-          </p>
-        </div>
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+          {t('overview.title')}
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Welcome back! Here's what's happening at your learning center today.
+        </p>
       </div>
 
-      {search.trim() && (
-        <GlassPanel className="p-5">
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-sm font-medium text-emerald-950 dark:text-lime-100">
-              {t('overview.searchResults')} · <span className="text-emerald-700/70 dark:text-lime-300/60">{search}</span>
-            </p>
-            <Link
-              to="/students"
-              className="text-xs font-semibold text-emerald-700 hover:text-emerald-600 dark:text-lime-400 dark:hover:text-lime-300"
-            >
-              {t('overview.allStudents')}
-            </Link>
-          </div>
-          <ul className="mt-4 divide-y divide-emerald-200/50 dark:divide-lime-500/15">
-            {searchHits.length === 0 && (
-              <li className="py-6 text-center text-sm text-emerald-800/60 dark:text-lime-300/50">
-                {t('overview.noResults')}
-              </li>
-            )}
-            {searchHits.map(({ student: s, group: g }) => (
-              <li
-                key={s.id}
-                className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0"
-              >
-                <div>
-                  <p className="font-medium text-emerald-950 dark:text-lime-50">
-                    {s.firstName} {s.lastName}
-                  </p>
-                  <p className="font-mono text-xs text-emerald-800/70 dark:text-lime-300/60">{s.loginId}</p>
-                </div>
-                <div className="text-right">
-                  {s.status === 'finished' ? (
-                    <Badge variant="green">{t('overview.courseDone')}</Badge>
-                  ) : g ? (
-                    <Badge variant="blue">{g.name}</Badge>
-                  ) : (
-                    <Badge variant="yellow">{t('overview.noGroup')}</Badge>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </GlassPanel>
-      )}
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title={t('overview.stats.totalTitle')}
-          value={stats.total}
-          subtitle={t('overview.stats.totalSub')}
+          value={statsData.total}
+          delta="+12.5%"
           icon={Users}
-          accent="bg-lime-400"
+          color="bg-violet-600 text-violet-600"
         />
         <StatCard
           title={t('overview.stats.activeTitle')}
-          value={stats.active}
-          subtitle={t('overview.stats.activeSub')}
+          value={statsData.active}
+          delta="+3.2%"
           icon={UserCheck}
-          accent="bg-emerald-400"
+          color="bg-emerald-600 text-emerald-600"
         />
         <StatCard
-          title={t('overview.stats.finishedTitle')}
-          value={stats.finished}
-          subtitle={t('overview.stats.finishedSub')}
+          title="Total Groups"
+          value={statsData.groups}
+          delta="+4"
           icon={GraduationCap}
-          accent="bg-emerald-500"
+          color="bg-blue-600 text-blue-600"
         />
         <StatCard
           title={t('overview.stats.incomeTitle')}
-          value={formatUZS(stats.income)}
-          subtitle={t('overview.stats.incomeSub')}
-          icon={TrendingUp}
-          accent="bg-teal-400"
-        />
-        <StatCard
-          title={t('overview.stats.expenseTitle')}
-          value={formatUZS(stats.expense)}
-          subtitle={t('overview.stats.expenseSub')}
-          icon={TrendingDown}
-          accent="bg-rose-400"
-        />
-        <StatCard
-          title={t('overview.stats.balanceTitle')}
-          value={formatUZS(stats.balance)}
-          subtitle={t('overview.stats.balanceSub')}
+          value={formatUZS(statsData.income)}
+          delta="+8.4%"
           icon={Wallet}
-          accent="bg-amber-400"
+          color="bg-amber-600 text-amber-600"
         />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-7">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#0B0F19] lg:col-span-4">
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Revenue Overview</h3>
+            <select className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-white">
+              <option>Last 7 days</option>
+              <option>Last 30 days</option>
+            </select>
+          </div>
+          <div className="flex h-[300px] items-end justify-between gap-2 pt-4">
+            {[60, 45, 80, 55, 90, 75, 100].map((h, i) => (
+              <div key={i} className="group relative flex flex-1 flex-col items-center">
+                <div 
+                  style={{ height: `${h}%` }} 
+                  className="w-full rounded-t-xl bg-violet-600/10 transition-all group-hover:bg-violet-600 shadow-[inset_0_0_0_1px_rgba(124,58,237,0.1)]"
+                />
+                <span className="mt-3 text-[10px] font-bold text-slate-400">
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]}
+                </span>
+                <div className="absolute -top-10 scale-90 rounded-lg bg-slate-900 px-2 py-1 text-[10px] font-bold text-white opacity-0 transition group-hover:scale-100 group-hover:opacity-100">
+                  ${(h * 150).toLocaleString()}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#0B0F19] lg:col-span-3">
+          <h3 className="mb-6 text-lg font-bold text-slate-900 dark:text-white">Today's Classes</h3>
+          <div className="space-y-4">
+            {[
+              { time: '09:00 AM', group: 'React G1', teacher: 'Anvar Usmonov', status: 'In Progress' },
+              { time: '11:30 AM', group: 'Python B2', teacher: 'Madina Yusupova', status: 'Upcoming' },
+              { time: '02:00 PM', group: 'Design A1', teacher: 'Kamol Nazarov', status: 'Upcoming' },
+              { time: '04:30 PM', group: 'English C3', teacher: 'Dilnoza Karimova', status: 'Upcoming' },
+            ].map((c, i) => (
+              <div key={i} className="flex items-center gap-4 rounded-2xl border border-slate-100 p-4 transition hover:border-violet-200 hover:bg-violet-50/30 dark:border-slate-800/50 dark:hover:bg-violet-500/5">
+                <div className="flex h-12 w-12 flex-col items-center justify-center rounded-xl bg-slate-50 text-[10px] font-bold text-slate-500 dark:bg-slate-900">
+                  <Clock size={16} className="mb-1 text-violet-500" />
+                  {c.time.split(' ')[0]}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{c.group}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{c.teacher}</p>
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${c.status === 'In Progress' ? 'text-emerald-500' : 'text-slate-400'}`}>
+                  {c.status}
+                </span>
+              </div>
+            ))}
+          </div>
+          <button className="mt-6 w-full rounded-xl bg-slate-50 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800">
+            View Full Schedule
+          </button>
+        </div>
+      </div>
+      
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#0B0F19]">
+        <div className="mb-6 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Activity</h3>
+          <button className="text-slate-400 hover:text-slate-600">
+            <MoreHorizontal size={20} />
+          </button>
+        </div>
+        <div className="space-y-6">
+          {[
+            { user: 'Alisher Karimov', action: 'paid for October', time: '2 hours ago', icon: Wallet, color: 'bg-emerald-500' },
+            { user: 'Madina Yusupova', action: 'marked attendance for React G1', time: '3 hours ago', icon: Calendar, color: 'bg-violet-500' },
+            { user: 'New Lead', action: 'requested a demo from website', time: '5 hours ago', icon: Users, color: 'bg-blue-500' },
+          ].map((a, i) => (
+            <div key={i} className="flex items-start gap-4">
+              <div className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${a.color} text-white shadow-md`}>
+                <a.icon size={16} />
+              </div>
+              <div className="flex-1 border-b border-slate-100 pb-4 last:border-0 dark:border-slate-800/50">
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  <span className="font-bold text-slate-900 dark:text-white">{a.user}</span> {a.action}
+                </p>
+                <p className="mt-1 text-xs text-slate-400">{a.time}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

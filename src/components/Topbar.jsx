@@ -1,4 +1,4 @@
-import { LogOut, Menu, Search } from 'lucide-react';
+import { LogOut, Menu, Search, Bell, User } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/authSlice';
 import { setAdminSearch } from '../store/uiSlice';
@@ -10,6 +10,7 @@ export default function Topbar({ onMenuClick }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const adminSearch = useSelector((state) => state.ui.adminSearch);
+  const { user } = useSelector((state) => state.auth);
   const t = useT();
 
   const handleLogout = () => {
@@ -18,30 +19,21 @@ export default function Topbar({ onMenuClick }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-emerald-200/50 bg-white/50 backdrop-blur-xl dark:border-lime-500/15 dark:bg-emerald-950/40">
-      <div className="flex h-[60px] items-center justify-between gap-3 px-4 md:gap-4 md:px-6">
-        <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-5">
+    <header className="sticky top-0 z-30 h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/80">
+      <div className="flex h-full items-center justify-between gap-4 px-4 md:px-8">
+        <div className="flex flex-1 items-center gap-4">
           <button
             type="button"
             onClick={onMenuClick}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-transparent bg-emerald-900/5 text-emerald-900 transition hover:bg-emerald-900/10 dark:bg-lime-500/10 dark:text-lime-200 dark:hover:bg-lime-500/15 md:hidden"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 md:hidden"
             aria-label={t('topbar.menu')}
           >
             <Menu size={20} />
           </button>
 
-          <div className="hidden shrink-0 items-center gap-2 font-semibold sm:flex">
-            <span className="font-mono text-lg tracking-tight text-transparent bg-gradient-to-br from-emerald-600 via-lime-500 to-green-400 bg-clip-text dark:from-lime-400 dark:via-emerald-300 dark:to-lime-300">
-              Edu-X
-            </span>
-            <span className="rounded-md border border-emerald-200/80 bg-emerald-50/80 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:border-lime-500/25 dark:bg-emerald-950/60 dark:text-lime-300/90">
-              {t('topbar.admin')}
-            </span>
-          </div>
-
-          <div className="relative min-w-0 max-w-xl flex-1">
+          <div className="relative max-w-md flex-1">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600/70 dark:text-lime-500/60"
+              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
               strokeWidth={2}
             />
             <input
@@ -49,21 +41,47 @@ export default function Topbar({ onMenuClick }) {
               value={adminSearch}
               onChange={(e) => dispatch(setAdminSearch(e.target.value))}
               placeholder={t('topbar.searchPlaceholder')}
-              className="h-10 w-full rounded-xl border border-emerald-200/80 bg-white/80 pl-10 pr-3 font-mono text-sm text-emerald-950 shadow-sm outline-none transition placeholder:text-emerald-600/50 focus:border-lime-500 focus:ring-2 focus:ring-lime-500/20 dark:border-lime-500/20 dark:bg-emerald-950/50 dark:text-lime-100 dark:placeholder:text-lime-500/40 dark:focus:border-lime-400 dark:focus:ring-lime-400/25"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-violet-500/50"
             />
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 md:gap-3">
+        <div className="flex shrink-0 items-center gap-2 md:gap-4">
           <ThemeLangControls />
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-emerald-800 transition hover:bg-emerald-100/80 hover:text-emerald-950 dark:text-lime-300/80 dark:hover:bg-emerald-900/50 dark:hover:text-lime-200"
-            title={t('topbar.logout')}
-          >
-            <LogOut size={20} strokeWidth={1.75} />
+          
+          <button className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">
+            <Bell size={20} strokeWidth={2} />
+            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-white bg-rose-500 dark:border-[#0B0F19]" />
           </button>
+
+          <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
+
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right md:block">
+              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                {user?.firstName} {user?.lastName}
+              </p>
+              <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                {user?.role === 'admin' ? t('topbar.admin') : user?.role}
+              </p>
+            </div>
+            
+            <div className="group relative">
+              <button className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-violet-100 text-violet-600 ring-2 ring-violet-500/20 transition group-hover:ring-violet-500/40 dark:bg-violet-500/10 dark:text-violet-400">
+                <User size={20} strokeWidth={2.25} />
+              </button>
+              
+              <div className="invisible absolute right-0 top-full mt-2 w-48 scale-95 rounded-xl border border-slate-200 bg-white p-1.5 opacity-0 shadow-xl ring-1 ring-slate-950/5 transition-all group-hover:visible group-hover:scale-100 group-hover:opacity-100 dark:border-slate-800 dark:bg-[#0B0F19]">
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10"
+                >
+                  <LogOut size={16} />
+                  {t('topbar.logout')}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </header>
