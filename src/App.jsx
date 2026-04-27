@@ -50,7 +50,7 @@ function App() {
           path="/admin/dashboard"
           element={isAdmin ? <AdminLayout /> : <Navigate to="/admin/login" replace />}
         >
-          <Route index element={<AdminOverview />} />
+          <Route index element={<Navigate to="students" replace />} />
           <Route path="students" element={<AdminStudents />} />
           <Route path="teachers" element={<AdminTeachers />} />
           <Route path="groups" element={<AdminGroups />} />

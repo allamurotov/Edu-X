@@ -1,10 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, ArrowRight, Code, Users2, Rocket, Monitor, Database, Palette } from 'lucide-react';
+import { GraduationCap, ArrowRight, Code, Users2, Rocket, Monitor, Database, Palette, Globe } from 'lucide-react';
 import CourseRegistrationModal from './CourseRegistrationModal';
+
+const translations = {
+  uz: {
+    heroTitle: "IT olamiga kirishni",
+    heroTitleHighlight: "Edu-X bilan boshlang!",
+    heroDescription: "Ko'pchilik IT sohasini murakkab deb o'ylaydi. Bizning vazifamiz – murakkab kodlarni oddiy tilda tushuntirish va sizni noldan professional darajaga olib chiqish. Edu-X – bu shunchaki kurs emas, bu sizning yangi karyerangiz boshlang'ich nuqtasi.",
+    kirish: 'KIRISH',
+    kursgaYozilish: 'Kursga yozilish',
+    batafsilMalumot: 'Batafsil ma\'lumot',
+    eduXNima: 'Edu-X nima?',
+    nimalarQilsaBoladi: 'Nimalar qilsa bo\'ladi?',
+    kimlarUchun: 'Kimlar uchun?'
+  },
+  ru: {
+    heroTitle: "Вход в мир IT с",
+    heroTitleHighlight: "Edu-X!",
+    heroDescription: "Многие считают IT-сферу сложной. Наша задача – объяснять сложный код простым языком и довести вас от нуля до профессионального уровня. Edu-X – это не просто курс, это отправная точка вашей новой карьеры.",
+    kirish: 'ВОЙТИ',
+    kursgaYozilish: 'Записаться на курс',
+    batafsilMalumot: 'Подробнее',
+    eduXNima: 'Что такое Edu-X?',
+    nimalarQilsaBoladi: 'Что можно делать?',
+    kimlarUchun: 'Для кого?'
+  },
+  en: {
+    heroTitle: "Enter the world of IT with",
+    heroTitleHighlight: "Edu-X!",
+    heroDescription: "Many people think the IT field is complicated. Our mission is to explain complex code in simple language and take you from zero to professional level. Edu-X is not just a course, it's the starting point of your new career.",
+    kirish: 'LOGIN',
+    kursgaYozilish: 'Enroll in Course',
+    batafsilMalumot: 'Learn More',
+    eduXNima: 'What is Edu-X?',
+    nimalarQilsaBoladi: 'What can you do?',
+    kimlarUchun: 'Who is it for?'
+  }
+};
 
 export default function PublicLanding() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [language, setLanguage] = useState(() => {
+    const saved = localStorage.getItem('eduXLang');
+    return saved || 'uz'; // Default to Uzbek
+  });
+
+  useEffect(() => {
+    localStorage.setItem('eduXLang', language);
+  }, [language]);
+
+  const t = translations[language];
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -24,11 +70,24 @@ export default function PublicLanding() {
               </span>
             </div>
             <div className="flex items-center gap-4">
+              {/* Language Switcher */}
+              <div className="flex items-center gap-2">
+                <Globe size={16} className="text-gray-400" />
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="text-sm font-medium bg-transparent border-none outline-none cursor-pointer text-gray-400"
+                >
+                  <option value="uz">UZ</option>
+                  <option value="ru">RU</option>
+                  <option value="en">EN</option>
+                </select>
+              </div>
               <Link
                 to="/student/login"
                 className="inline-flex items-center gap-2 rounded-xl border border-gray-700 bg-gray-900 px-4 py-2 text-sm font-medium text-gray-300 transition-all hover:bg-gray-800 hover:text-white"
               >
-                KIRISH
+                {t.kirish}
               </Link>
             </div>
           </div>
@@ -40,27 +99,28 @@ export default function PublicLanding() {
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
           <div className="text-center">
             <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl animate-fade-in">
-              IT olamiga kirishni
+              {t.heroTitle}
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">
-                Edu-X bilan boshlang!
+                {t.heroTitleHighlight}
               </span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-300 sm:text-xl animate-fade-in-delay-1">
-              Ko'pchilik IT sohasini murakkab deb o'ylaydi. Bizning vazifamiz – murakkab kodlarni oddiy tilda tushuntirish va sizni noldan professional darajaga olib chiqish. Edu-X – bu shunchaki kurs emas, bu sizning yangi karyerangiz boshlang'ich nuqtasi.
+              {t.heroDescription}
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center sm:gap-6">
               <button
                 onClick={openModal}
                 className="inline-flex items-center gap-3 rounded-xl bg-gradient-to-r from-green-400 to-emerald-500 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-green-500/20 transition-all hover:from-green-500 hover:to-emerald-600 hover:shadow-green-500/30 hover:-translate-y-px animate-fade-in-delay-2"
               >
-                Kursga yozilish
+                {t.kursgaYozilish}
                 <ArrowRight size={20} />
               </button>
               <Link
-                to="/course-details"
-                className="inline-flex items-center gap-3 rounded-xl border border-gray-700 bg-gray-900 px-8 py-4 text-lg font-semibold text-gray-300 transition-all hover:bg-gray-800 hover:text-white animate-fade-in-delay-2"
+                to="/admin"
+                className="inline-flex items-center gap-3 rounded-xl border border-gray-700 bg-gray-900 px-8 py-4 text-lg font-semibold text-gray-300 shadow-lg transition-all hover:bg-gray-800 hover:text-white hover:-translate-y-px animate-fade-in-delay-3"
               >
-                Batafsil ma'lumot
+                {t.batafsilMalumot}
+                <ArrowRight size={20} />
               </Link>
             </div>
           </div>
@@ -68,49 +128,49 @@ export default function PublicLanding() {
       </main>
 
       {/* Tushuntirish Section */}
-      <section className="border-t border-gray-800 bg-black/30 py-20">
+      <section className="border-t border-[rgba(0,255,136,0.15)] bg-[#050A14] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-4xl font-bold text-white sm:text-5xl">
               Nega aynan Edu-X?
             </h2>
-            <p className="mt-6 text-lg text-gray-300">
+            <p className="mt-6 text-lg text-[#A7F3D0]">
               Foydalanuvchi nimalarni o'rganishini tushunishi uchun 3 ta asosiy blok
             </p>
           </div>
           <div className="mx-auto mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="group relative rounded-xl border border-gray-800 bg-gray-900/50 p-8 transition-all hover:border-green-500/30 hover:bg-gray-900/80 hover:shadow-lg hover:shadow-green-500/10">
-              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg shadow-green-500/20">
+            <div className="group relative rounded-xl border border-[rgba(0,255,136,0.15)] bg-[#020617] p-8 transition-all hover:border-[rgba(0,255,136,0.3)] hover:bg-[#050A14] hover:shadow-lg hover:shadow-[#00FF88]/10">
+              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-[#00FF88] to-[#22C55E] text-white shadow-lg shadow-[#00FF88]/20">
                 <Code size={32} />
               </div>
               <h3 className="mt-6 text-xl font-semibold text-white">
                 💻 Zamonaviy Texnologiyalar
               </h3>
-              <p className="mt-4 text-gray-300">
+              <p className="mt-4 text-[#A7F3D0]">
                 Bizda faqat bugungi kunda bozor talab qilayotgan texnologiyalar o'rgatiladi. Frontend (HTML, CSS, JS) dan boshlab, Backend (Node.js, PostgreSQL) gacha.
               </p>
             </div>
 
-            <div className="group relative rounded-xl border border-gray-800 bg-gray-900/50 p-8 transition-all hover:border-green-500/30 hover:bg-gray-900/80 hover:shadow-lg hover:shadow-green-500/10">
-              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg shadow-green-500/20">
+            <div className="group relative rounded-xl border border-[rgba(0,255,136,0.15)] bg-[#020617] p-8 transition-all hover:border-[rgba(0,255,136,0.3)] hover:bg-[#050A14] hover:shadow-lg hover:shadow-[#00FF88]/10">
+              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-[#00FF88] to-[#22C55E] text-white shadow-lg shadow-[#00FF88]/20">
                 <Users2 size={32} />
               </div>
               <h3 className="mt-6 text-xl font-semibold text-white">
                 🛠 Amaliy Tajriba
               </h3>
-              <p className="mt-4 text-gray-300">
+              <p className="mt-4 text-[#A7F3D0]">
                 Nazariya – bu faqat 20%. Qolgan 80% vaqtingizni real loyihalar ustida ishlashga sarflaysiz. Kurs oxirida sizda shaxsiy portfoli bo'ladi.
               </p>
             </div>
 
-            <div className="group relative rounded-xl border border-gray-800 bg-gray-900/50 p-8 transition-all hover:border-green-500/30 hover:bg-gray-900/80 hover:shadow-lg hover:shadow-green-500/10">
-              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg shadow-green-500/20">
+            <div className="group relative rounded-xl border border-[rgba(0,255,136,0.15)] bg-[#020617] p-8 transition-all hover:border-[rgba(0,255,136,0.3)] hover:bg-[#050A14] hover:shadow-lg hover:shadow-[#00FF88]/10">
+              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-[#00FF88] to-[#22C55E] text-white shadow-lg shadow-[#00FF88]/20">
                 <Rocket size={32} />
               </div>
               <h3 className="mt-6 text-xl font-semibold text-white">
                 🚀 Tezkor Start
               </h3>
-              <p className="mt-4 text-gray-300">
+              <p className="mt-4 text-[#A7F3D0]">
                 Biz sizga keraksiz ma'lumotlarni bermaymiz. Maqsadimiz – sizni eng qisqa vaqt ichida junior dasturchi darajasiga yetkazish va ishga tayyorlash.
               </p>
             </div>

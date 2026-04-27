@@ -20,7 +20,7 @@ import {
 import { useT } from '../../i18n/useT';
 
 const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 dark:border-slate-800 dark:bg-slate-900/50 dark:text-white dark:focus:border-violet-500/50';
+  'w-full rounded-xl border border-[rgba(0,255,136,0.20)] bg-[#020403] px-4 py-2.5 text-sm text-[#FFFFFF] outline-none transition focus:border-[#00FF88] focus:ring-4 focus:ring-[rgba(0,255,136,0.10)]';
 
 export default function Groups() {
   const t = useT();
@@ -57,17 +57,17 @@ export default function Groups() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-[#FFFFFF]">
             {t('groups.title')}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-[#9AE6B4]">
             Create and manage learning groups, assign teachers, and track student enrollment.
           </p>
         </div>
         
         <button 
           onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-700"
+          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#00FF88] to-[#22C55E] px-5 py-2.5 text-sm font-bold text-[#020403] shadow-lg shadow-[#00FF88]/30 transition hover:from-[#22C55E] hover:to-[#00FF88]"
         >
           <Plus size={18} />
           {t('groups.newTitle')}
@@ -81,69 +81,69 @@ export default function Groups() {
           const isOpen = expandedId === g.id;
 
           return (
-            <div key={g.id} className="flex flex-col rounded-3xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl dark:border-slate-800 dark:bg-[#0B0F19]">
+            <div key={g.id} className="flex flex-col rounded-3xl border border-[rgba(0,255,136,0.20)] bg-[#050505] shadow-sm transition-all hover:shadow-xl shadow-[#00FF88]/10">
               <div className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[rgba(0,255,136,0.1)] text-[#00FF88]">
                       <Users size={24} />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">{g.name}</h3>
-                      <p className="text-xs font-medium text-slate-400">{courseLabel(g.courseId)}</p>
+                      <h3 className="text-lg font-bold text-[#FFFFFF]">{g.name}</h3>
+                      <p className="text-xs font-medium text-[#9AE6B4]">{courseLabel(g.courseId)}</p>
                     </div>
                   </div>
-                  <button className="text-slate-400 hover:text-slate-600">
+                  <button className="text-[#9AE6B4] hover:text-[#FFFFFF]">
                     <MoreHorizontal size={20} />
                   </button>
                 </div>
 
                 <div className="mt-6 space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                      <GraduationCap size={14} className="text-violet-500" />
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#9AE6B4] uppercase tracking-widest">
+                      <GraduationCap size={14} className="text-[#00FF88]" />
                       Teacher
                     </div>
                     {teacher ? (
-                      <span className="text-sm font-bold text-slate-900 dark:text-white">{teacher.firstName} {teacher.lastName}</span>
+                      <span className="text-sm font-bold text-[#FFFFFF]">{teacher.firstName} {teacher.lastName}</span>
                     ) : (
-                      <button className="text-xs font-bold text-violet-500 hover:underline">Assign Teacher</button>
+                      <button className="text-xs font-bold text-[#00FF88] hover:underline">Assign Teacher</button>
                     )}
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                      <Users size={14} className="text-blue-500" />
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#9AE6B4] uppercase tracking-widest">
+                      <Users size={14} className="text-[#00FF88]" />
                       Students
                     </div>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">{members.length} / 15</span>
+                    <span className="text-sm font-bold text-[#FFFFFF]">{members.length} / 15</span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                      <Clock size={14} className="text-emerald-500" />
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#9AE6B4] uppercase tracking-widest">
+                      <Clock size={14} className="text-[#00FF88]" />
                       Schedule
                     </div>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">Mon, Wed, Fri</span>
+                    <span className="text-sm font-bold text-[#FFFFFF]">Mon, Wed, Fri</span>
                   </div>
                 </div>
 
                 <div className="mt-6 flex items-center -space-x-2">
                    {members.slice(0, 5).map(m => (
-                     <div key={m.id} className="h-8 w-8 rounded-full border-2 border-white bg-slate-200 dark:border-[#0B0F19]" />
+                     <div key={m.id} className="h-8 w-8 rounded-full border-2 border-[#000000] bg-[#020403]" />
                    ))}
                    {members.length > 5 && (
-                     <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-bold text-slate-500 dark:border-[#0B0F19] dark:bg-slate-800">
+                     <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#000000] bg-[#050505] text-[10px] font-bold text-[#9AE6B4]">
                        +{members.length - 5}
                      </div>
                    )}
                 </div>
               </div>
 
-              <div className="mt-auto border-t border-slate-100 dark:border-slate-800/50">
+              <div className="mt-auto border-t border-[rgba(0,255,136,0.20)]">
                  <button 
                    onClick={() => setExpandedId(isOpen ? null : g.id)}
-                   className="flex w-full items-center justify-center gap-2 py-4 text-xs font-bold text-slate-400 hover:text-slate-600 transition"
+                   className="flex w-full items-center justify-center gap-2 py-4 text-xs font-bold text-[#9AE6B4] hover:text-[#FFFFFF] transition"
                  >
                    {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                    {isOpen ? 'Close Members' : 'View Members'}
@@ -151,26 +151,26 @@ export default function Groups() {
               </div>
 
               {isOpen && (
-                <div className="border-t border-slate-100 bg-slate-50/50 p-6 dark:border-slate-800/50 dark:bg-slate-900/30">
+                <div className="border-t border-[rgba(0,255,136,0.20)] bg-[#020403] p-6">
                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">Roster</h4>
-                      <button className="text-[10px] font-bold text-violet-500 hover:underline uppercase tracking-widest">+ Add Student</button>
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-[#9AE6B4]">Roster</h4>
+                      <button className="text-[10px] font-bold text-[#00FF88] hover:underline uppercase tracking-widest">+ Add Student</button>
                    </div>
                    <div className="space-y-3">
                       {members.map(m => (
-                        <div key={m.id} className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+                        <div key={m.id} className="flex items-center justify-between rounded-xl bg-[#050505] p-3 shadow-sm border border-[rgba(0,255,136,0.20)]">
                            <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                              <div className="h-8 w-8 rounded-lg bg-[#020403] flex items-center justify-center text-[10px] font-bold text-[#9AE6B4]">
                                 {m.firstName[0]}{m.lastName[0]}
                               </div>
-                              <span className="text-xs font-bold text-slate-900 dark:text-white">{m.firstName} {m.lastName}</span>
+                              <span className="text-xs font-bold text-[#FFFFFF]">{m.firstName} {m.lastName}</span>
                            </div>
-                           <button className="text-slate-400 hover:text-rose-500">
+                           <button className="text-[#9AE6B4] hover:text-[#FF4444]">
                              <Trash2 size={14} />
                            </button>
                         </div>
                       ))}
-                      {members.length === 0 && <p className="text-center text-xs text-slate-400 py-2">No students yet.</p>}
+                      {members.length === 0 && <p className="text-center text-xs text-[#9AE6B4] py-2">No students yet.</p>}
                    </div>
                 </div>
               )}
@@ -181,29 +181,29 @@ export default function Groups() {
 
       {/* Add Group Modal */}
       {isAdding && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm dark:bg-black/60">
-           <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl dark:border-slate-800 dark:bg-[#0B0F19]">
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('groups.newTitle')}</h3>
-              <p className="mt-2 text-sm text-slate-500">Create a new student group for a specific course.</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+           <div className="w-full max-w-md rounded-3xl border border-[rgba(0,255,136,0.20)] bg-[#050505] p-8 shadow-2xl shadow-[#00FF88]/10">
+              <h3 className="text-xl font-bold text-[#FFFFFF]">{t('groups.newTitle')}</h3>
+              <p className="mt-2 text-sm text-[#9AE6B4]">Create a new student group for a specific course.</p>
               
               <form onSubmit={handleCreate} className="mt-8 space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('groups.course')}</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#9AE6B4]">{t('groups.course')}</label>
                   <select value={courseId} onChange={e => setCourseId(e.target.value)} className={inputClass}>
                     {COURSE_CATALOG.map(c => <option key={c.id} value={c.id}>{courseLabel(c.id)}</option>)}
                   </select>
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('groups.level')}</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#9AE6B4]">{t('groups.level')}</label>
                   <input type="number" min={1} value={level} onChange={e => setLevel(e.target.value)} className={inputClass} />
                 </div>
                 
                 <div className="pt-4 flex gap-3">
-                   <button type="submit" className="flex-1 rounded-xl bg-violet-600 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-700">
+                   <button type="submit" className="flex-1 rounded-xl bg-gradient-to-r from-[#00FF88] to-[#22C55E] py-3 text-sm font-bold text-[#020403] shadow-lg shadow-[#00FF88]/30 transition hover:from-[#22C55E] hover:to-[#00FF88]">
                      Create Group
                    </button>
-                   <button type="button" onClick={() => setIsAdding(false)} className="flex-1 rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                   <button type="button" onClick={() => setIsAdding(false)} className="flex-1 rounded-xl bg-[#020403] py-3 text-sm font-bold text-[#9AE6B4] transition hover:bg-[rgba(0,255,136,0.08)] hover:text-[#FFFFFF] border border-[rgba(0,255,136,0.20)]">
                      Cancel
                    </button>
                 </div>
