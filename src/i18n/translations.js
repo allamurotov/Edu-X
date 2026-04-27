@@ -13,6 +13,7 @@ export const translations = {
       finance: 'Moliya',
       shop: 'Do‘kon',
       schedule: 'Jadval',
+      homework: 'Uy ishi',
       attendance: 'Davomat',
       courses: 'Kurslar',
       leads: 'Lidlar',

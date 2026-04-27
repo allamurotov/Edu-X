@@ -23,6 +23,7 @@ const adminMenu = [
   { nameKey: 'nav.groups', path: '/groups', icon: Layers },
   { nameKey: 'nav.schedule', path: '/schedule', icon: Calendar },
   { nameKey: 'nav.finance', path: '/finance', icon: Wallet },
+  { nameKey: 'nav.homework', path: '/homework', icon: BookOpen },
   { nameKey: 'nav.attendance', path: '/attendance', icon: CheckSquare },
   { nameKey: 'nav.courses', path: '/courses', icon: BookOpen },
   { nameKey: 'nav.leads', path: '/leads', icon: MessageSquare },
